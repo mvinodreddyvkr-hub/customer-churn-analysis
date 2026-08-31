@@ -179,3 +179,75 @@ print("=" * 50)
 print(f"Rows: {len(df):,}")
 print(f"Columns: {len(df.columns):,}")
 print(f"Output: {output_file}")
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
+
+# 1. Load Raw Data
+df = pd.read_csv("data/raw/customers_raw.csv")
+
+# 2. Inspect Data
+print("--- FIRST 5 ROWS ---")
+print(df.head())
+print("\n--- SHAPE ---")
+print(df.shape)
+print("\n--- INFO ---")
+df.info()
+print("\n--- STATISTICAL SUMMARY ---")
+print(df.describe())
+
+# 3. Check Data Quality Issues
+print("\n--- MISSING VALUES ---")
+print(df.isnull().sum())
+print("\n--- DUPLICATE ROWS ---")
+print(df.duplicated().sum())
+
+# 4. Data Cleaning Transformations
+# Remove duplicate rows if any exist
+df = df.drop_duplicates()
+
+# Convert date columns to standard datetime format (adjust column names if needed)
+date_cols = [c for c in df.columns if "date" in c.lower()]
+for col in date_cols:
+    df[col] = pd.to_datetime(df[col], errors="coerce")
+
+# Trim whitespace from string/text columns
+str_cols = df.select_dtypes(include=["object"]).columns
+for col in str_cols:
+    df[col] = df[col].astype(str).str.strip()
+
+# Handle numeric cleanup (e.g., replace invalid/negative values if applicable)
+num_cols = df.select_dtypes(include=[np.number]).columns
+for col in num_cols:
+    df[col] = df[col].apply(lambda x: max(0, x) if pd.notnull(x) else x)
+
+# 5. Export Cleaned Dataset
+df.to_csv("customers_clean.csv", index=False)
+print(
+    "\n Data cleaning complete! Saved to 'customers_clean.csv'."
+)
+
+
+
+print("========== DATA QUALITY REPORT ==========")
+
+print("Rows:", df.shape[0])
+print("Columns:", df.shape[1])
+
+print("Duplicate rows:", df.duplicated().sum())
+
+print("\nMissing values:")
+print(df.isnull().sum())
+
+print("\nData types:")
+print(df.dtypes)
+
+print("\n========== REPORT COMPLETE ==========")
